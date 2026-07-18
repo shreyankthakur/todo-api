@@ -1,0 +1,66 @@
+=== root ===
+{"name":"Task API","version":"1.0","endpoints":["/tasks","/tasks/{id}"]}-e 
+=== health ===
+{"status":"ok"}-e 
+=== list ===
+[{"id":1,"title":"Buy milk","done":false},{"id":2,"title":"Write README","done":false},{"id":3,"title":"Walk the dog","done":true}]-e 
+=== get 1 ===
+HTTP/1.1 200 OK
+date: Sat, 18 Jul 2026 12:20:02 GMT
+server: uvicorn
+content-length: 40
+content-type: application/json
+
+{"id":1,"title":"Buy milk","done":false}-e 
+=== get 99 (404) ===
+HTTP/1.1 404 Not Found
+date: Sat, 18 Jul 2026 12:20:02 GMT
+server: uvicorn
+content-length: 29
+content-type: application/json
+
+{"error":"Task 99 not found"}-e 
+=== create ===
+HTTP/1.1 201 Created
+date: Sat, 18 Jul 2026 12:20:02 GMT
+server: uvicorn
+content-length: 40
+content-type: application/json
+
+{"id":4,"title":"Buy milk","done":false}-e 
+=== create empty (400) ===
+HTTP/1.1 400 Bad Request
+date: Sat, 18 Jul 2026 12:20:02 GMT
+server: uvicorn
+content-length: 33
+content-type: application/json
+
+{"error":"title: Field required"}-e 
+=== update ===
+HTTP/1.1 200 OK
+date: Sat, 18 Jul 2026 12:20:02 GMT
+server: uvicorn
+content-length: 39
+content-type: application/json
+
+{"id":4,"title":"Buy milk","done":true}-e 
+=== delete ===
+HTTP/1.1 204 No Content
+date: Sat, 18 Jul 2026 12:20:02 GMT
+server: uvicorn
+content-type: application/json
+
+-e 
+=== filter done=true ===
+[{"id":3,"title":"Walk the dog","done":true}]-e 
+=== search milk ===
+[{"id":1,"title":"Buy milk","done":false}]-e 
+=== stats ===
+{"total":3,"done":1,"open":2}-e 
+=== reset ===
+{"message":"Tasks reset to seed data","tasks":[{"id":1,"title":"Buy milk","done":false},{"id":2,"title":"Write README","done":false},{"id":3,"title":"Walk the dog","done":true}]}-e 
+=== docs 200 check ===
+200
+-e 
+=== openapi.json 200 check ===
+200
