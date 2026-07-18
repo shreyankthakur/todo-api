@@ -1,0 +1,14 @@
+Build me a simple REST API for a to-do list app using Python and FastAPI.
+
+I need basic CRUD:
+- get all tasks
+- get one task by id
+- create a new task (just needs a title)
+- update a task (title or done status)
+- delete a task
+
+Store the tasks in memory, no database. Each task should have an id, title, and done (true/false).
+
+Make sure creating a task returns a 201 status, and deleting returns 204. If someone asks for a task that doesn't exist, return a 404 error. If someone tries to create a task without a title, return a 400 error.
+
+Also I want Swagger docs so I can test it in the browser.
