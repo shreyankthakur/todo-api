@@ -18,6 +18,11 @@ class TaskCreate(BaseModel):
     title: str
 
 
+class TaskUpdate(BaseModel):
+    title: str | None = None
+    done: bool | None = None
+
+
 @app.get("/")
 def root():
     return {"name": "Task API", "version": "1.0", "endpoints": ["/tasks", "/tasks/{id}"]}
@@ -51,6 +56,32 @@ def create_task(payload: TaskCreate):
     tasks.append(task)
     next_id += 1
     return task
+
+
+@app.put("/tasks/{task_id}")
+def update_task(task_id: int, payload: TaskUpdate):
+    for t in tasks:
+        if t["id"] == task_id:
+            if payload.title is None and payload.done is None:
+                raise HTTPException(status_code=400, detail="Provide at least one of: title, done")
+            if payload.title is not None:
+                title = payload.title.strip()
+                if not title:
+                    raise HTTPException(status_code=400, detail="title cannot be empty")
+                t["title"] = title
+            if payload.done is not None:
+                t["done"] = payload.done
+            return t
+    raise HTTPException(status_code=404, detail=f"Task {task_id} not found")
+
+
+@app.delete("/tasks/{task_id}", status_code=204)
+def delete_task(task_id: int):
+    for i, t in enumerate(tasks):
+        if t["id"] == task_id:
+            tasks.pop(i)
+            return
+    raise HTTPException(status_code=404, detail=f"Task {task_id} not found")
 
 
 @app.exception_handler(HTTPException)
