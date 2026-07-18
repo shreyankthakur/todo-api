@@ -3,7 +3,11 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-app = FastAPI(title="Task API", version="1.0")
+app = FastAPI(
+    title="Task API",
+    version="1.0",
+    description="A small in-memory CRUD API for managing a to-do list.",
+)
 
 # In-memory "database" — a plain list. Resets on restart (no DB yet).
 tasks = [
@@ -23,22 +27,22 @@ class TaskUpdate(BaseModel):
     done: bool | None = None
 
 
-@app.get("/")
+@app.get("/", summary="API info", description="Basic info about this API and its endpoints.")
 def root():
     return {"name": "Task API", "version": "1.0", "endpoints": ["/tasks", "/tasks/{id}"]}
 
 
-@app.get("/health")
+@app.get("/health", summary="Health check", description="Returns ok if the server is alive.")
 def health():
     return {"status": "ok"}
 
 
-@app.get("/tasks")
+@app.get("/tasks", summary="List tasks", description="List all tasks.")
 def list_tasks():
     return tasks
 
 
-@app.get("/tasks/{task_id}")
+@app.get("/tasks/{task_id}", summary="Get one task", description="Get a single task by id.")
 def get_task(task_id: int):
     for t in tasks:
         if t["id"] == task_id:
@@ -46,7 +50,7 @@ def get_task(task_id: int):
     raise HTTPException(status_code=404, detail=f"Task {task_id} not found")
 
 
-@app.post("/tasks", status_code=201)
+@app.post("/tasks", status_code=201, summary="Create a task", description="Create a new task.")
 def create_task(payload: TaskCreate):
     global next_id
     title = payload.title.strip() if payload.title else ""
@@ -58,7 +62,7 @@ def create_task(payload: TaskCreate):
     return task
 
 
-@app.put("/tasks/{task_id}")
+@app.put("/tasks/{task_id}", summary="Update a task", description="Replace a task's title and/or done status.")
 def update_task(task_id: int, payload: TaskUpdate):
     for t in tasks:
         if t["id"] == task_id:
@@ -75,7 +79,7 @@ def update_task(task_id: int, payload: TaskUpdate):
     raise HTTPException(status_code=404, detail=f"Task {task_id} not found")
 
 
-@app.delete("/tasks/{task_id}", status_code=204)
+@app.delete("/tasks/{task_id}", status_code=204, summary="Delete a task", description="Delete a task by id.")
 def delete_task(task_id: int):
     for i, t in enumerate(tasks):
         if t["id"] == task_id:
