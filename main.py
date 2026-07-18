@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
+from typing import Optional
 
 app = FastAPI(
     title="Task API",
@@ -37,9 +38,14 @@ def health():
     return {"status": "ok"}
 
 
-@app.get("/tasks", summary="List tasks", description="List all tasks.")
-def list_tasks():
-    return tasks
+@app.get("/tasks", summary="List tasks", description="List all tasks, optionally filtered by done or search.")
+def list_tasks(done: Optional[bool] = None, search: Optional[str] = None):
+    result = tasks
+    if done is not None:
+        result = [t for t in result if t["done"] == done]
+    if search is not None:
+        result = [t for t in result if search.lower() in t["title"].lower()]
+    return result
 
 
 @app.get("/tasks/{task_id}", summary="Get one task", description="Get a single task by id.")
@@ -86,6 +92,26 @@ def delete_task(task_id: int):
             tasks.pop(i)
             return
     raise HTTPException(status_code=404, detail=f"Task {task_id} not found")
+
+
+@app.get("/stats", summary="Stats", description="Summary counts of tasks.")
+def stats():
+    total = len(tasks)
+    done_count = sum(1 for t in tasks if t["done"])
+    return {"total": total, "done": done_count, "open": total - done_count}
+
+
+@app.post("/reset", summary="Reset", description="Restore the 3 example seed tasks.")
+def reset():
+    global tasks, next_id
+    tasks.clear()
+    tasks.extend([
+        {"id": 1, "title": "Buy milk", "done": False},
+        {"id": 2, "title": "Write README", "done": False},
+        {"id": 3, "title": "Walk the dog", "done": True},
+    ])
+    next_id = 4
+    return {"message": "Tasks reset to seed data", "tasks": tasks}
 
 
 @app.exception_handler(HTTPException)
